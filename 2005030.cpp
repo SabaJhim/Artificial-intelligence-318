@@ -2,9 +2,10 @@
 
 using namespace std;
 
-int hamming_distance(vector<vector<string>> grid, int k)
+int hamming_distance(vector<vector<string>> grid)
 {
         int count = 0;
+        int k=grid.size();
 
         for (int i = 0; i < k; i++)
         {
@@ -102,6 +103,50 @@ class p_queue{
         }
         int cost_find(Search_Node node){
                 return manhattan_distance(node.current_grid)+node.moves ;
+        }
+
+};
+
+class p_queue_hamming{
+
+        //We will push Searc_Nodes according to the cost function.
+        //First element will have the minimum cost.
+        public :
+        vector<Search_Node> list;
+
+        void insert(Search_Node node){
+                list.push_back(node);
+                arrange();
+        }
+
+        void del(Search_Node node){
+                for(int i=0; i<list.size(); i++){
+                        if(list[i].current_grid==node.current_grid) {
+                                list.erase(list.begin()+i);
+        
+                        }
+                }
+        }
+
+      
+
+        void arrange(){
+                int i=list.size()-2;
+                int j=list.size()-1;
+
+                while(i>=0){
+                        if(cost_find(list[i])>cost_find(list[j])){
+                                swap(list[i],list[j]);
+                                i--;
+                                j--;
+                        }
+                        else{
+                                i--;
+                        }
+                }
+        }
+        int cost_find(Search_Node node){
+                return hamming_distance(node.current_grid)+node.moves ;
         }
 
 };
@@ -227,40 +272,91 @@ bool is_solvable(vector<vector<string>>grid){
 
 
 
-void get_solve(int k,vector<vector<string>> grid,vector<vector<string>>initial,vector<vector<string>> final){
+void get_solve_manhattan(int k,vector<vector<string>> grid,vector<vector<string>>initial,vector<vector<string>> final){
         vector<Search_Node> result;  //closed list
         p_queue pq;  //open list
+        int explored=0;
+        int expanded=0;
 
         pq.insert(Search_Node(grid,0,initial));
+        explored++;
 
-              while(!pq.list.empty()){
-                int flag=0;
+        while(!pq.list.empty()){
                 Search_Node current_node = pq.list.front();
                 pq.del(current_node);
+                expanded++;
+
                 if(current_node.current_grid==final){
-                        print_Nodes(current_node);
+                        result.push_back(current_node);
                         break;
                 }
 
                 result.push_back(current_node);
                 vector<Search_Node> neighbors = Node_Generator(current_node);
+
                 for(auto& neighbor : neighbors){
-                        if(neighbor.current_grid==final){
-                                result.push_back(neighbor);
-                                flag=1;
-                                break;
-                        }
                         pq.insert(neighbor);
+                        explored++;
+                        
                 }
-                if(flag==1){
-                        break;
+
+        }
+        for(int i=result.size()-1; i>0; i--){
+                if(result[i].previous_grid!=result[i-1].current_grid){
+                        result.erase(result.begin()+i-1);
                 }
         }
-        cout<<endl<<"Result : "<<endl;
+        cout<<endl<<"Result : Manhattan"<<endl;
         for(auto& node :result){
                 print_Nodes(node);
-                cout<<result.size()<<endl;
         }
+         cout<<"Total Cost (Manhattan) : "<<result.size()-1<<endl;
+         cout<<"Total Nodes Explored(Manhattan) : "<<explored<<endl;
+         cout<<"Total Nodes Expanded(Manhattan) : "<<expanded<<endl;
+}
+
+void get_solve_hamming(int k,vector<vector<string>> grid,vector<vector<string>>initial,vector<vector<string>> final){
+        vector<Search_Node> result;  //closed list
+        p_queue_hamming pq;  //open list
+        int explored=0;
+        int expanded=0;
+
+        pq.insert(Search_Node(grid,0,initial));
+        explored++;
+
+        while(!pq.list.empty()){
+                Search_Node current_node = pq.list.front();
+                pq.del(current_node);
+                expanded++;
+
+                if(current_node.current_grid==final){
+                        result.push_back(current_node);
+                        break;
+                }
+
+                result.push_back(current_node);
+                vector<Search_Node> neighbors = Node_Generator(current_node);
+
+                for(auto& neighbor : neighbors){
+                        pq.insert(neighbor);
+                        explored++;
+                        
+                }
+
+        }
+        for(int i=result.size()-1; i>0; i--){
+                if(result[i].previous_grid!=result[i-1].current_grid){
+                        result.erase(result.begin()+i-1);
+                }
+        }
+        cout<<endl<<"Result : Hamming"<<endl;
+        for(auto& node :result){
+                print_Nodes(node);
+        }
+        cout<<"Total Cost (Hamming) : "<<result.size()-1<<endl;
+        cout<<"Total Nodes Explored(Hamming) : "<<explored<<endl;
+        cout<<"Total Nodes Expanded(Hamming) : "<<expanded<<endl;
+ 
 }
 
 
@@ -290,7 +386,8 @@ int main(){
 
         if(ans){
                 cout<<"The grid is solvable."<<endl;
-                get_solve(k,grid,initial,final);
+                get_solve_manhattan(k,grid,initial,final);
+                get_solve_hamming(k,grid,initial,final);
 
         }
         else{
