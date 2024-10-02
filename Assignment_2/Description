@@ -1,0 +1,4 @@
+In this assignment we will implement adversarial search by building Mancala :
+-> We will make a player vs AI program where AI will use Minimax algorithm with alpha beta pruning
+-> We will make a AI vs AI program both using minimax but different heuristic function
+-> A report generating program will be written where we will compare 2 heuristic function by making them play 50 to 100 times changing depth of their heuristics
